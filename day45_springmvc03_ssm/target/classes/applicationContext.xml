@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--整合mybatis-->
+    <!--1. 使用第三方的连接池-->
+    <context:property-placeholder location="classpath:db.properties"/>
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${driverClass}"/>
+        <property name="jdbcUrl" value="${jdbcUrl}"/>
+        <property name="user" value="${user}"/>
+        <property name="password" value="${password}"/>
+    </bean>
+
+    <!--
+        2. 由spring来创建SqlSessionFactory
+            2.1 配置SqlSessionFactoryBean的作用就是这个类会在背后帮助我们创建出来SqlSessionFactory对象
+            2.2 不仅创建出来SqlSessionFactory，还会创建出来SqlSession
+            2.3 不仅如此，还会创建出来dao的代理对象，并且把这个代理对象，丢到spring的容器里面管理起来。
+            2.4 这就让我们的service去调用dao变得更加的简单
+                @Autowired
+                private AccountDao dao;
+     -->
+    <bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+
+        <!--起别名-->
+        <property name="typeAliasesPackage" value="com.itheima.bean"/>
+    </bean>
+
+    <!--3. 还要扫描dao的映射文件，这个工作，也可以在这里配置，交给spring来完成-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.itheima.dao"/>
+    </bean>
+
+    <!--
+        4. 把事务交给spring管理
+            4.1 spring管理事务，是由管理员来管理的，根据dao层的技术不同管理员也不同
+                jdbctemplate | mybatis  ===== DataSoruceTransactionManager
+                hibernate  ======== HibernateTransactioManager
+            4.2 管理员操作事务需要用到连接对象，所以要把DataSource给注入进来
+    -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--配置事务的注解驱动-->
+    <tx:annotation-driven/>
+</beans>
