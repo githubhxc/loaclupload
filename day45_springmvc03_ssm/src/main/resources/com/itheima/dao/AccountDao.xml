@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.dao.AccountDao">
+
+    <!--这个别名一定要在applicationContext里面的SqlSessionFactoryBean类中声明才可以用，否则就要写全路径名字-->
+    <select id="findAll" resultType="account">
+        select * from account
+    </select>
+</mapper>
